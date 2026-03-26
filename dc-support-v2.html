@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DS Core — Support v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* ─── TOKENS ── */
+    :root {
+      --font:'Be Vietnam Pro',sans-serif;
+      --text-base:16px;--w-base:400;--lh-base:24px;--ls-base:-0.4px;
+      --text-strong:16px;--w-strong:600;--lh-strong:24px;--ls-strong:-0.4px;
+      --text-action:14px;--w-action:600;--lh-action:24px;--ls-action:-0.35px;
+      --text-sm:14px;--w-sm:400;--lh-sm:20px;--ls-sm:-0.35px;
+      --text-xs:12px;--w-xs:400;--lh-xs:16px;--ls-xs:-0.3px;
+      --sp-xxs:4px;--sp-xs:8px;--sp-s:12px;--sp-m:16px;--sp-l:24px;--sp-ll:48px;
+      --br-s:4px;--br-m:8px;--br-std:12px;--br-lg:16px;--br-pill:999px;
+      --c-bg:#f5f5f5;--c-surface:#fff;--c-text:#242424;--c-sub:#575757;
+      --c-dis:#8a8a8a;--c-on-pri:#fff;--c-border:#d7d7d7;--c-border-sub:#ebebeb;
+      --c-border-foc:#71a2fe;--c-pri:#0f62fe;--c-pri-h:#014bd5;--c-sec-h:#ebebeb;
+      --sh1:0 1px 1px rgba(0,0,0,.02),0 2px 8px rgba(0,0,0,.04);
+      --sh2:0 2px 4px rgba(0,0,0,.04),0 2px 8px rgba(0,0,0,.08);
+    }
+
+    /* ─── RESET ── */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;}
+    body{font-family:var(--font);font-size:var(--text-base);color:var(--c-text);background:var(--c-bg);-webkit-font-smoothing:antialiased;}
+    button{font-family:inherit;border:none;background:none;cursor:pointer;}
+    input,textarea,select{font-family:inherit;}
+
+    /* ─── VERSION SWITCHER BAR ── */
+    .ver-bar{
+      position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:3000;
+      display:flex;align-items:center;gap:8px;
+      background:rgba(255,255,255,.96);border:1px solid var(--c-border);
+      border-radius:var(--br-std);padding:8px 12px;box-shadow:var(--sh2);
+    }
+    .ver-lbl{font-size:11px;font-weight:600;color:var(--c-sub);letter-spacing:.05em;text-transform:uppercase;}
+    .ver-btn{padding:4px 12px;border-radius:var(--br-m);font-size:12px;font-weight:600;font-family:var(--font);color:var(--c-sub);border:1px solid transparent;cursor:pointer;transition:all .15s;background:none;}
+    .ver-btn:hover{background:var(--c-bg);color:var(--c-text);}
+    .ver-btn.on{background:var(--c-pri);color:#fff;}
+    .ver-divider{width:1px;height:20px;background:var(--c-border);margin:0 2px;}
+
+    /* ─── DEMO BAR ── */
+    .demo-bar{
+      position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:3000;
+      display:flex;align-items:center;gap:8px;
+      background:rgba(255,255,255,.96);border:1px solid var(--c-border);
+      border-radius:var(--br-std);padding:8px 12px;box-shadow:var(--sh2);
+    }
+    .demo-lbl{font-size:11px;font-weight:600;color:var(--c-sub);letter-spacing:.05em;text-transform:uppercase;}
+    .demo-btn{padding:4px 10px;border-radius:var(--br-m);font-size:12px;font-weight:600;font-family:var(--font);color:var(--c-sub);border:1px solid transparent;cursor:pointer;transition:all .15s;background:none;}
+    .demo-btn:hover{background:var(--c-bg);color:var(--c-text);}
+    .demo-btn.on{background:var(--c-pri);color:#fff;}
+
+    /* ─── PAGE SHELL ── */
+    .page{display:flex;height:100vh;width:100%;}
+
+    /* Sidebar */
+    .sidebar{width:256px;flex-shrink:0;height:100%;background:var(--c-surface);display:flex;flex-direction:column;}
+    .menu-header{display:flex;align-items:center;gap:var(--sp-xs);padding:var(--sp-s) var(--sp-s) var(--sp-m) var(--sp-m);}
+    .text-logo{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--c-text);white-space:nowrap;display:inline-flex;align-items:center;gap:6px;}
+    .logo-mark{width:20px;height:20px;background:var(--c-text);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .logo-mark svg{width:12px;height:12px;}
+    .icon-btn{display:flex;align-items:center;justify-content:center;padding:var(--sp-xs);border-radius:var(--br-std);color:var(--c-text);transition:background .15s;flex-shrink:0;}
+    .icon-btn:hover{background:var(--c-bg);}
+    .icon-btn svg{width:24px;height:24px;}
+    .nav-list{display:flex;flex-direction:column;gap:var(--sp-xxs);padding:0 var(--sp-s);}
+    .nav-item{display:flex;align-items:center;gap:var(--sp-xs);padding:var(--sp-s);border-radius:var(--br-std);width:100%;color:var(--c-text);font-size:var(--text-base);font-weight:var(--w-base);line-height:var(--lh-base);letter-spacing:var(--ls-base);transition:background .15s;text-align:left;}
+    .nav-item:hover{background:var(--c-bg);}
+    .nav-item svg{width:24px;height:24px;flex-shrink:0;}
+    .content{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{background:var(--c-bg);display:flex;align-items:center;justify-content:flex-end;padding:var(--sp-s) var(--sp-m);gap:var(--sp-xs);flex-shrink:0;}
+    .avatar{width:40px;height:40px;border-radius:var(--br-std);background:#d1e1ff;display:flex;align-items:center;justify-content:center;font-size:var(--text-strong);font-weight:var(--w-strong);color:var(--c-pri);cursor:pointer;flex-shrink:0;font-family:var(--font);}
+    .page-body{flex:1;background:var(--c-bg);}
+
+    /* ─── BUTTONS ── */
+    .btn-pri{display:inline-flex;align-items:center;gap:var(--sp-xs);padding:var(--sp-xs) var(--sp-m);height:40px;border-radius:var(--br-std);font-family:var(--font);font-size:var(--text-action);font-weight:var(--w-action);letter-spacing:var(--ls-action);color:var(--c-on-pri);border:none;background:var(--c-pri);box-shadow:var(--sh2);cursor:pointer;transition:background .15s;white-space:nowrap;}
+    .btn-pri:hover{background:var(--c-pri-h);}
+    .btn-sec{display:inline-flex;align-items:center;gap:var(--sp-xs);padding:var(--sp-xs) var(--sp-m);height:40px;border-radius:var(--br-std);font-family:var(--font);font-size:var(--text-action);font-weight:var(--w-action);letter-spacing:var(--ls-action);color:var(--c-text);border:1px solid var(--c-border-sub);background:var(--c-surface);box-shadow:var(--sh1);cursor:pointer;transition:background .15s;white-space:nowrap;}
+    .btn-sec:hover{background:var(--c-sec-h);}
+
+    /* ─── MODAL OVERLAY ── */
+    .modal-backdrop{
+      position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:400;
+      display:flex;align-items:center;justify-content:center;
+      opacity:1;pointer-events:all;transition:opacity .2s;
+    }
+    .modal-backdrop.hidden{opacity:0;pointer-events:none;}
+
+    /* Modal box */
+    .modal{
+      background:var(--c-surface);border-radius:var(--br-lg);padding:var(--sp-l);
+      width:min(580px,calc(100vw - 48px));
+      display:flex;flex-direction:column;gap:var(--sp-l);
+      box-shadow:0 8px 40px rgba(0,0,0,.18);position:relative;z-index:401;
+      animation:modal-in .2s cubic-bezier(.4,0,.2,1) both;
+    }
+    @keyframes modal-in{from{opacity:0;transform:scale(.97) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+
+    /* Headline */
+    .modal-headline{display:flex;align-items:flex-start;gap:var(--sp-l);}
+    .modal-title{flex:1;font-size:24px;font-weight:600;line-height:32px;letter-spacing:-0.6px;color:var(--c-text);padding:var(--sp-xxs) 0;}
+    .modal-close{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--br-std);color:var(--c-sub);transition:background .15s;flex-shrink:0;}
+    .modal-close:hover{background:var(--c-sec-h);}
+    .modal-close svg{width:24px;height:24px;}
+
+    /* Cards grid */
+    .modal-cards{display:grid;gap:var(--sp-m);}
+    .modal-cards.cols-3{grid-template-columns:repeat(3,1fr);}
+    .modal-cards.cols-2{grid-template-columns:repeat(2,1fr);}
+    .modal-cards.cols-1{grid-template-columns:1fr;}
+
+    .modal-card{
+      background:var(--c-surface);border:1px solid var(--c-border-sub);
+      border-radius:var(--br-std);padding:var(--sp-m);box-shadow:var(--sh1);
+      cursor:pointer;transition:box-shadow .15s,border-color .15s;
+      display:flex;flex-direction:column;gap:var(--sp-xs);
+    }
+    .modal-card:hover{box-shadow:var(--sh2);border-color:var(--c-border);}
+    .modal-card-img{height:130px;border-radius:var(--br-m);overflow:hidden;background:rgba(0,0,0,.04);position:relative;}
+    .modal-card-img img{width:100%;height:100%;object-fit:cover;display:block;}
+    /* QR code inside img container */
+    .qr-wrap{display:flex;align-items:center;justify-content:center;height:100%;background:#fafafa;}
+    .qr-wrap svg{width:80px;height:80px;color:var(--c-text);}
+    .modal-card-label{font-size:var(--text-base);font-weight:var(--w-base);line-height:var(--lh-base);letter-spacing:var(--ls-base);color:var(--c-text);}
+    .modal-card-value{font-size:var(--text-action);font-weight:var(--w-action);line-height:var(--lh-action);letter-spacing:var(--ls-action);color:var(--c-pri);}
+    .modal-card-value.link{color:var(--c-pri-h);}
+    .modal-card-value.voicemail{color:var(--c-sub);font-weight:400;}
+    .badge-voicemail{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:var(--br-pill);background:#ebebeb;font-size:var(--text-xs);font-weight:600;color:var(--c-sub);margin-top:2px;width:fit-content;}
+
+    /* Form fields */
+    .modal-body{display:flex;flex-direction:column;gap:var(--sp-m);}
+    .field-wrap{display:flex;flex-direction:column;gap:var(--sp-xxs);}
+    .field-label{font-size:var(--text-base);font-weight:var(--w-base);line-height:var(--lh-base);letter-spacing:var(--ls-base);color:var(--c-text);}
+    .field-input{height:40px;padding:var(--sp-xs) var(--sp-m);border:1px solid var(--c-border);border-radius:var(--br-std);background:var(--c-surface);font-family:var(--font);font-size:var(--text-base);color:var(--c-text);outline:none;transition:border .12s;width:100%;}
+    .field-input::placeholder{color:var(--c-dis);}
+    .field-input:focus{border:2px solid var(--c-border-foc);}
+    textarea.field-input{height:120px;resize:vertical;line-height:var(--lh-base);}
+
+    /* Toolbar */
+    .modal-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-xs);}
+
+    /* ─── CONFIG PANEL ── */
+    .config-panel{
+      position:fixed;right:0;top:0;bottom:0;
+      width:340px;background:var(--c-surface);
+      border-left:1px solid var(--c-border);
+      z-index:2000;display:flex;flex-direction:column;
+      box-shadow:-4px 0 24px rgba(0,0,0,.08);
+      transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);
+    }
+    .config-panel.open{transform:translateX(0);}
+    .config-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:var(--sp-m);border-bottom:1px solid var(--c-border);flex-shrink:0;
+    }
+    .config-header-title{font-size:var(--text-strong);font-weight:var(--w-strong);line-height:var(--lh-strong);letter-spacing:var(--ls-strong);color:var(--c-text);}
+    .config-body{flex:1;overflow-y:auto;padding:var(--sp-m);display:flex;flex-direction:column;gap:var(--sp-m);}
+
+    /* Config section */
+    .cfg-section{display:flex;flex-direction:column;gap:var(--sp-xs);}
+    .cfg-section-title{font-size:var(--text-xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--c-dis);padding-bottom:var(--sp-xxs);border-bottom:1px solid var(--c-border-sub);}
+
+    /* Config row */
+    .cfg-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-m);min-height:36px;}
+    .cfg-row-label{font-size:var(--text-sm);font-weight:var(--w-sm);line-height:var(--lh-sm);letter-spacing:var(--ls-sm);color:var(--c-text);flex-shrink:0;}
+    .cfg-row-sub{font-size:var(--text-xs);color:var(--c-sub);margin-top:1px;}
+
+    /* Toggle switch */
+    .toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;position:absolute;}
+    .toggle-track{position:absolute;inset:0;border-radius:var(--br-pill);background:var(--c-border);cursor:pointer;transition:background .2s;}
+    .toggle input:checked+.toggle-track{background:var(--c-pri);}
+    .toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:var(--sh1);transition:transform .2s;pointer-events:none;}
+    .toggle input:checked~.toggle-thumb{transform:translateX(16px);}
+
+    /* Config input */
+    .cfg-input{height:32px;padding:4px var(--sp-s);border:1px solid var(--c-border);border-radius:var(--br-m);background:var(--c-surface);font-family:var(--font);font-size:var(--text-sm);color:var(--c-text);outline:none;width:100%;transition:border .12s;}
+    .cfg-input::placeholder{color:var(--c-dis);}
+    .cfg-input:focus{border:2px solid var(--c-border-foc);}
+    .cfg-input-wrap{width:100%;display:flex;flex-direction:column;gap:4px;}
+
+    /* Radio group */
+    .cfg-radio-group{display:flex;gap:var(--sp-xs);}
+    .cfg-radio-btn{
+      padding:4px var(--sp-s);border-radius:var(--br-m);font-size:var(--text-xs);font-weight:600;
+      font-family:var(--font);color:var(--c-sub);border:1px solid var(--c-border-sub);
+      background:var(--c-surface);cursor:pointer;transition:all .15s;white-space:nowrap;
+    }
+    .cfg-radio-btn:hover{background:var(--c-bg);}
+    .cfg-radio-btn.active{background:var(--c-pri);color:#fff;border-color:var(--c-pri);}
+
+    /* Config toggle button (gear icon) — fixed left of config panel */
+    .cfg-toggle-btn{
+      position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:2001;
+      width:32px;height:48px;background:var(--c-surface);border:1px solid var(--c-border);
+      border-right:none;border-radius:var(--br-m) 0 0 var(--br-m);
+      display:flex;align-items:center;justify-content:center;
+      color:var(--c-sub);cursor:pointer;transition:background .15s,right .25s cubic-bezier(.4,0,.2,1);
+      box-shadow:var(--sh1);
+    }
+    .cfg-toggle-btn svg{width:16px;height:16px;}
+    .cfg-toggle-btn:hover{background:var(--c-bg);}
+    .cfg-toggle-btn.panel-open{right:340px;}
+
+    /* Disabled state for sub-inputs */
+    .cfg-sub{display:flex;flex-direction:column;gap:var(--sp-xs);padding-left:var(--sp-m);border-left:2px solid var(--c-border-sub);}
+    .cfg-sub.hidden{display:none;}
+
+    /* ─── BREAKPOINTS ── */
+    html.bp-l .sidebar{width:72px;}
+    html.bp-l .nav-item span{display:none;}
+    html.bp-l .menu-header .text-logo span:not(.logo-mark){display:none;}
+    html.bp-m .sidebar,html.bp-s .sidebar{display:none;}
+    html.bp-m .topbar,html.bp-s .topbar{justify-content:space-between;}
+    html.bp-s .modal-cards.cols-3,html.bp-m .modal-cards.cols-3{grid-template-columns:1fr;}
+  </style>
+</head>
+<body>
+
+  <!-- VERSION SWITCHER -->
+  <div class="ver-bar">
+    <span class="ver-lbl">Version</span>
+    <button class="ver-btn" id="ver-v1" onclick="location.href='dc-support.html'">V1 — Original</button>
+    <div class="ver-divider"></div>
+    <button class="ver-btn on" id="ver-v2">V2 — Configurable</button>
+  </div>
+
+  <!-- DEMO BAR -->
+  <div class="demo-bar">
+    <span class="demo-lbl">Layout</span>
+    <button class="demo-btn on" id="btn-xl">XL</button>
+    <button class="demo-btn" id="btn-l">L</button>
+    <button class="demo-btn" id="btn-m">M</button>
+    <button class="demo-btn" id="btn-s">S</button>
+  </div>
+
+  <!-- PAGE SHELL -->
+  <div class="page">
+    <nav class="sidebar">
+      <div class="menu-header">
+        <button class="icon-btn" aria-label="Toggle menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="8" x2="19" y2="8"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="16" x2="19" y2="16"/></svg>
+        </button>
+        <span class="text-logo">
+          <span class="logo-mark"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4" stroke="white" stroke-width="1.5"/><path d="M4 6h4M6 4v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          DS Core
+        </span>
+      </div>
+      <div class="nav-list">
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg><span>Home</span></button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 015-5h4a5 5 0 015 5v2"/><circle cx="17" cy="9" r="2.5"/><path d="M20 21v-1.5a4 4 0 00-2-3.46"/></svg><span>Patients</span></button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg><span>Orders</span></button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49"/></svg><span>Collaboration</span></button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M6 20v-6h5v6M11 14V8h2v6M13 10h5M16 20v-6h2v6"/></svg><span>Treatments</span></button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>Jobs</span></button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="13" rx="2"/><path d="M2 10h2M2 14h2"/><circle cx="9" cy="11" r="1.5"/><polyline points="18 19 14 14 9 19"/></svg><span>Files</span></button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M7 7V5a5 5 0 0110 0v2"/><circle cx="12" cy="14" r="2"/></svg><span>Equipment</span></button>
+      </div>
+    </nav>
+
+    <div class="content">
+      <header class="topbar">
+        <button class="icon-btn" id="open-support" aria-label="Support">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </button>
+        <button class="icon-btn" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </button>
+        <button class="avatar">ZG</button>
+      </header>
+      <div class="page-body"></div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL ─── -->
+  <div class="modal-backdrop" id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal" id="modal-box">
+
+      <div class="modal-headline">
+        <p class="modal-title" id="modal-title">Contact us</p>
+        <button class="modal-close" id="modal-close" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Cards rendered by JS -->
+        <div class="modal-cards" id="modal-cards"></div>
+
+        <!-- Target email field -->
+        <div class="field-wrap" id="field-email-wrap">
+          <label class="field-label" for="modal-email">Your email (for ticket reply)</label>
+          <input class="field-input" id="modal-email" type="email" placeholder="your@email.com"/>
+        </div>
+
+        <!-- Phone field -->
+        <div class="field-wrap" id="field-phone-wrap">
+          <label class="field-label" for="modal-phone">Phone number</label>
+          <input class="field-input" id="modal-phone" type="tel" placeholder="Enter phone number"/>
+        </div>
+
+        <!-- Message -->
+        <div class="field-wrap">
+          <label class="field-label" for="modal-message">Message</label>
+          <textarea class="field-input" id="modal-message" placeholder="Describe your problem, and our service will contact you as soon as possible."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-toolbar">
+        <button class="btn-sec" id="modal-cancel">Cancel</button>
+        <button class="btn-pri" id="modal-send">Send</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── CONFIG PANEL ─── -->
+  <button class="cfg-toggle-btn" id="cfg-toggle-btn" aria-label="Toggle configuration">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+  </button>
+
+  <aside class="config-panel" id="config-panel" aria-label="Modal configuration">
+    <div class="config-header">
+      <span class="config-header-title">Configuration</span>
+      <button class="icon-btn" id="cfg-close" aria-label="Close configuration" style="width:32px;height:32px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="config-body">
+
+      <!-- ── Support contact pillar ── -->
+      <div class="cfg-section">
+        <span class="cfg-section-title">Pillar 1 — Contact Support</span>
+
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Show pillar</div></div>
+          <label class="toggle"><input type="checkbox" id="cfg-p1-show" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+        </div>
+
+        <div class="cfg-sub" id="cfg-p1-sub">
+          <div class="cfg-row">
+            <div class="cfg-row-label">Contact method</div>
+            <div class="cfg-radio-group">
+              <button class="cfg-radio-btn active" data-group="p1-method" data-val="phone">Phone</button>
+              <button class="cfg-radio-btn" data-group="p1-method" data-val="qr">QR / Link</button>
+              <button class="cfg-radio-btn" data-group="p1-method" data-val="email">Mailbox</button>
+            </div>
+          </div>
+          <div class="cfg-input-wrap" id="cfg-p1-phone-wrap">
+            <label style="font-size:12px;color:var(--c-sub);">Phone number</label>
+            <input class="cfg-input" id="cfg-p1-phone" type="tel" value="+41 44 000 0000" placeholder="+xx xxx xxxxxx"/>
+          </div>
+          <div class="cfg-input-wrap hidden" id="cfg-p1-email-wrap">
+            <label style="font-size:12px;color:var(--c-sub);">Target mailbox / ticket URL</label>
+            <input class="cfg-input" id="cfg-p1-email" type="text" value="support@dscore.com" placeholder="email or URL"/>
+          </div>
+          <div class="cfg-input-wrap hidden" id="cfg-p1-qr-wrap">
+            <label style="font-size:12px;color:var(--c-sub);">Link (generates QR code)</label>
+            <input class="cfg-input" id="cfg-p1-qr" type="url" value="https://support.dscore.com" placeholder="https://…"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DS Core Create Helpline pillar ── -->
+      <div class="cfg-section">
+        <span class="cfg-section-title">Pillar 2 — DS Core Create Helpline</span>
+
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Show pillar</div></div>
+          <label class="toggle"><input type="checkbox" id="cfg-p2-show" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+        </div>
+
+        <div class="cfg-sub" id="cfg-p2-sub">
+          <div class="cfg-row">
+            <div class="cfg-row-label">Phone number</div>
+            <label class="toggle"><input type="checkbox" id="cfg-p2-phone-show" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+          </div>
+          <div class="cfg-input-wrap" id="cfg-p2-phone-wrap">
+            <input class="cfg-input" id="cfg-p2-phone" type="tel" value="+41 44 000 0001" placeholder="+xx xxx xxxxxx"/>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Voicemail only</div><div class="cfg-row-sub">Marks number as voicemail</div></div>
+            <label class="toggle"><input type="checkbox" id="cfg-p2-voicemail"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DS Core Consultation pillar ── -->
+      <div class="cfg-section">
+        <span class="cfg-section-title">Pillar 3 — DS Core Consultation</span>
+
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Show pillar</div></div>
+          <label class="toggle"><input type="checkbox" id="cfg-p3-show" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+        </div>
+
+        <div class="cfg-sub" id="cfg-p3-sub">
+          <div class="cfg-input-wrap">
+            <label style="font-size:12px;color:var(--c-sub);">Booking link</label>
+            <input class="cfg-input" id="cfg-p3-link" type="url" value="https://book.dscore.com/1on1" placeholder="https://…"/>
+          </div>
+          <div class="cfg-input-wrap">
+            <label style="font-size:12px;color:var(--c-sub);">Link label</label>
+            <input class="cfg-input" id="cfg-p3-label" type="text" value="Book your 1-on-1 session" placeholder="Button label"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Ticket / email form ── -->
+      <div class="cfg-section">
+        <span class="cfg-section-title">Form</span>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Email field</div><div class="cfg-row-sub">Collect sender email</div></div>
+          <label class="toggle"><input type="checkbox" id="cfg-email-field" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Phone field</div><div class="cfg-row-sub">Collect callback number</div></div>
+          <label class="toggle"><input type="checkbox" id="cfg-phone-field"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+        </div>
+        <div class="cfg-input-wrap">
+          <label style="font-size:12px;color:var(--c-sub);">Submit destination (email or ticket URL)</label>
+          <input class="cfg-input" id="cfg-submit-dest" type="text" value="tickets@dscore.com" placeholder="email or webhook URL"/>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <script>
+    /* ─── Demo bar ── */
+    ['xl','l','m','s'].forEach(function(b){
+      var btn=document.getElementById('btn-'+b);
+      if(btn) btn.addEventListener('click',function(){
+        document.documentElement.classList.remove('bp-l','bp-m','bp-s');
+        if(b!=='xl') document.documentElement.classList.add('bp-'+b);
+        ['xl','l','m','s'].forEach(function(x){
+          var el=document.getElementById('btn-'+x);
+          if(el) el.classList.toggle('on',x===b);
+        });
+      });
+    });
+
+    /* ─── Modal open / close ── */
+    function openModal(){document.getElementById('modal-backdrop').classList.remove('hidden');}
+    function closeModal(){document.getElementById('modal-backdrop').classList.add('hidden');}
+    document.getElementById('open-support').addEventListener('click',openModal);
+    document.getElementById('modal-close').addEventListener('click',closeModal);
+    document.getElementById('modal-cancel').addEventListener('click',closeModal);
+    document.getElementById('modal-backdrop').addEventListener('click',function(e){if(e.target===this)closeModal();});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+    document.getElementById('modal-send').addEventListener('click',function(){
+      var msg=document.getElementById('modal-message').value.trim();
+      if(!msg){document.getElementById('modal-message').focus();return;}
+      closeModal();
+      document.getElementById('modal-message').value='';
+      document.getElementById('modal-phone').value='';
+      document.getElementById('modal-email').value='';
+    });
+
+    /* ─── Config panel toggle ── */
+    var cfgOpen=false;
+    function toggleCfg(){
+      cfgOpen=!cfgOpen;
+      document.getElementById('config-panel').classList.toggle('open',cfgOpen);
+      document.getElementById('cfg-toggle-btn').classList.toggle('panel-open',cfgOpen);
+    }
+    document.getElementById('cfg-toggle-btn').addEventListener('click',toggleCfg);
+    document.getElementById('cfg-close').addEventListener('click',toggleCfg);
+
+    /* ─── QR code generator (pure SVG, simple matrix) ── */
+    function makeQRSVG(text){
+      /* Tiny placeholder QR-style grid — real QR would need a library.
+         We generate a seeded deterministic dot grid that looks like a QR. */
+      var size=21;var cells=[];
+      // Seed from text charCode sum
+      var seed=0;for(var i=0;i<text.length;i++)seed=(seed*31+text.charCodeAt(i))&0xffff;
+      function rng(){seed=(seed*1664525+1013904223)&0xffffffff;return(seed>>>0)/0xffffffff;}
+      for(var r=0;r<size;r++){cells[r]=[];for(var c2=0;c2<size;c2++){
+        // Finder patterns
+        var inFinder=(r<7&&c2<7)||(r<7&&c2>size-8)||(r>size-8&&c2<7);
+        var inFinderInner=(r>=1&&r<=5&&c2>=1&&c2<=5)||(r>=1&&r<=5&&c2>=size-7&&c2<=size-2)||(r>=size-7&&r<=size-2&&c2>=1&&c2<=5);
+        if(inFinder)cells[r][c2]=1;
+        else if(inFinderInner)cells[r][c2]=0;
+        else cells[r][c2]=rng()>.5?1:0;
+      }}
+      var sq=8;var total=size*sq+8;
+      var svg='<svg viewBox="0 0 '+total+' '+total+'" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:80px;">';
+      svg+='<rect width="'+total+'" height="'+total+'" fill="#fafafa"/>';
+      for(var rr=0;rr<size;rr++)for(var cc=0;cc<size;cc++)
+        if(cells[rr][cc])svg+='<rect x="'+(cc*sq+4)+'" y="'+(rr*sq+4)+'" width="'+sq+'" height="'+sq+'" fill="#242424" rx="1"/>';
+      svg+='</svg>';
+      return svg;
+    }
+
+    /* ─── Read config & render modal cards ── */
+    function getConfig(){
+      return{
+        p1:{
+          show:document.getElementById('cfg-p1-show').checked,
+          method:document.querySelector('[data-group="p1-method"].active')?.dataset.val||'phone',
+          phone:document.getElementById('cfg-p1-phone').value||'+41 44 000 0000',
+          email:document.getElementById('cfg-p1-email').value||'support@dscore.com',
+          qr:document.getElementById('cfg-p1-qr').value||'https://support.dscore.com',
+        },
+        p2:{
+          show:document.getElementById('cfg-p2-show').checked,
+          phoneShow:document.getElementById('cfg-p2-phone-show').checked,
+          phone:document.getElementById('cfg-p2-phone').value||'+41 44 000 0001',
+          voicemail:document.getElementById('cfg-p2-voicemail').checked,
+        },
+        p3:{
+          show:document.getElementById('cfg-p3-show').checked,
+          link:document.getElementById('cfg-p3-link').value||'https://book.dscore.com/1on1',
+          label:document.getElementById('cfg-p3-label').value||'Book your 1-on-1 session',
+        },
+        emailField:document.getElementById('cfg-email-field').checked,
+        phoneField:document.getElementById('cfg-phone-field').checked,
+      };
+    }
+
+    /* Figma card images */
+    var IMG_P1='https://www.figma.com/api/mcp/asset/c648f4bd-dce6-41a4-9fd9-9ebec4008d09';
+    var IMG_P2='https://www.figma.com/api/mcp/asset/f8a2af70-2daf-462b-aed1-27ae2afa6c9e';
+    var IMG_P3='https://www.figma.com/api/mcp/asset/ac0b1123-12fb-43d2-b044-ff6e2b3714b4';
+
+    function renderModal(){
+      var cfg=getConfig();
+      var cardsEl=document.getElementById('modal-cards');
+      var cards=[];
+
+      /* Pillar 1 */
+      if(cfg.p1.show){
+        var valueHtml='';
+        if(cfg.p1.method==='phone'){
+          valueHtml='<span class="modal-card-value">'+cfg.p1.phone+'</span>';
+        } else if(cfg.p1.method==='email'){
+          valueHtml='<span class="modal-card-value">'+cfg.p1.email+'</span>';
+        } else {
+          valueHtml=''; /* QR shown in image area */
+        }
+        var imgHtml=cfg.p1.method==='qr'
+          ?'<div class="qr-wrap">'+makeQRSVG(cfg.p1.qr)+'</div>'
+          :'<img src="'+IMG_P1+'" alt="Contact support" onerror="this.style.opacity=\'.2\'"/>';
+        cards.push('<div class="modal-card">'
+          +'<div class="modal-card-img">'+imgHtml+'</div>'
+          +'<span class="modal-card-label">Contact support</span>'
+          +valueHtml
+          +'</div>');
+      }
+
+      /* Pillar 2 */
+      if(cfg.p2.show){
+        var p2val='';
+        if(cfg.p2.phoneShow){
+          if(cfg.p2.voicemail){
+            p2val='<span class="modal-card-value">'+cfg.p2.phone+'</span>'
+              +'<span class="badge-voicemail">'
+              +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:10px;height:10px;"><path d="M5.5 7.5a3 3 0 000 6h1l1 3 1-3h7a3 3 0 000-6H5.5z"/></svg>'
+              +' Voicemail only</span>';
+          } else {
+            p2val='<span class="modal-card-value">'+cfg.p2.phone+'</span>';
+          }
+        }
+        cards.push('<div class="modal-card">'
+          +'<div class="modal-card-img"><img src="'+IMG_P2+'" alt="DS Core Create Helpline" onerror="this.style.opacity=\'.2\'"/></div>'
+          +'<span class="modal-card-label">DS Core Create Helpline</span>'
+          +p2val
+          +'</div>');
+      }
+
+      /* Pillar 3 */
+      if(cfg.p3.show){
+        cards.push('<div class="modal-card" onclick="window.open(\''+cfg.p3.link+'\',\'_blank\')">'
+          +'<div class="modal-card-img" style="background:#f5f5f5;"><img src="'+IMG_P3+'" alt="DS Core consultation" onerror="this.style.opacity=\'.2\'"/></div>'
+          +'<span class="modal-card-label">DS Core consultation</span>'
+          +'<span class="modal-card-value link">'+cfg.p3.label+'</span>'
+          +'</div>');
+      }
+
+      /* Grid columns */
+      cardsEl.innerHTML=cards.join('');
+      var n=cards.length;
+      cardsEl.className='modal-cards cols-'+Math.min(n,3);
+      if(n===0)cardsEl.style.display='none'; else cardsEl.style.display='';
+
+      /* Form fields */
+      document.getElementById('field-email-wrap').style.display=cfg.emailField?'':'none';
+      document.getElementById('field-phone-wrap').style.display=cfg.phoneField?'':'none';
+    }
+
+    /* ─── Radio group buttons ── */
+    document.querySelectorAll('.cfg-radio-btn').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var group=btn.dataset.group;
+        document.querySelectorAll('[data-group="'+group+'"]').forEach(function(b){b.classList.remove('active');});
+        btn.classList.add('active');
+        /* Show/hide sub-inputs for p1 method */
+        if(group==='p1-method'){
+          var v=btn.dataset.val;
+          document.getElementById('cfg-p1-phone-wrap').classList.toggle('hidden',v!=='phone');
+          document.getElementById('cfg-p1-email-wrap').classList.toggle('hidden',v!=='email');
+          document.getElementById('cfg-p1-qr-wrap').classList.toggle('hidden',v!=='qr');
+        }
+        renderModal();
+      });
+    });
+
+    /* ─── Toggle show/hide sub-sections ── */
+    ['p1','p2','p3'].forEach(function(p){
+      var chk=document.getElementById('cfg-'+p+'-show');
+      if(chk) chk.addEventListener('change',function(){
+        document.getElementById('cfg-'+p+'-sub').classList.toggle('hidden',!chk.checked);
+        renderModal();
+      });
+    });
+
+    /* p2 phone show toggle */
+    document.getElementById('cfg-p2-phone-show').addEventListener('change',function(){
+      document.getElementById('cfg-p2-phone-wrap').classList.toggle('hidden',!this.checked);
+      renderModal();
+    });
+
+    /* All other config inputs → live re-render */
+    var liveInputIds=['cfg-p1-phone','cfg-p1-email','cfg-p1-qr','cfg-p2-phone','cfg-p3-link','cfg-p3-label','cfg-submit-dest'];
+    liveInputIds.forEach(function(id){
+      var el=document.getElementById(id);
+      if(el) el.addEventListener('input',renderModal);
+    });
+    var liveCheckIds=['cfg-p2-voicemail','cfg-email-field','cfg-phone-field'];
+    liveCheckIds.forEach(function(id){
+      var el=document.getElementById(id);
+      if(el) el.addEventListener('change',renderModal);
+    });
+
+    /* ─── Initial render ── */
+    renderModal();
+    /* Panel starts open so user discovers it */
+    toggleCfg();
+  </script>
+</body>
+</html>
